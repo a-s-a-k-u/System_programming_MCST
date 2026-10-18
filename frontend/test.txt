@@ -1,0 +1,32 @@
+i32 add(i32 a, i32 b) {
+    return a + b;
+}
+
+bool is_even(i32 x) {
+    return (x & 1) == 0;
+}
+
+i32 main(i32 argc, char ptr$ ptr$ argv) {
+    i32 i = 0;
+    i32 sum = 0;
+    bool flag = true;
+    char first_char = argv[0][0];
+
+    while (i < argc) {
+        if (i == 0) {
+            sum = add(sum, 10);
+        } elif (i == 1) {
+            sum = add(sum, 20);
+        } else {
+            sum += 1;
+        }
+
+        if (is_even(i)) {
+            flag = false;
+        }
+
+        i += 1;
+    }
+
+    return sum;
+}
