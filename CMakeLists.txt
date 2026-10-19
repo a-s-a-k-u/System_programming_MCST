@@ -3,7 +3,8 @@ project(System_programming LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-# Явно указываем CMake, где искать Bison и Flex
+# Явно указываю CMake, где искать Bison и Flex
+#local path, плохо но думаю в дальнейшем поправлю
 set(BISON_EXECUTABLE "C:/msys64/usr/bin/bison.exe" CACHE FILEPATH "Path to bison")
 set(FLEX_EXECUTABLE  "C:/msys64/usr/bin/flex.exe"  CACHE FILEPATH "Path to flex")
 
@@ -13,18 +14,18 @@ include(FetchContent)
 FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v3.5.2 # стабильная версия
+        GIT_TAG        v3.5.2 
 )
 FetchContent_MakeAvailable(Catch2)
-# =========================================================================
+
 # ЛАБА 1: ГРАФЫ (System_programming)
-# =========================================================================
+
 add_executable(System_programming
         src/main.cpp
         tools/graph.hpp
         tools/tree.hpp
 )
-# Убрали frontend_main.cpp и AST.h отсюда! У них свои main().
+
 target_include_directories(System_programming PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 
 # ЛАБА 2: ФРОНТЕНД (frontend)
