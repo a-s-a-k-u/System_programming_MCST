@@ -27,14 +27,12 @@ add_executable(System_programming
 # Убрали frontend_main.cpp и AST.h отсюда! У них свои main().
 target_include_directories(System_programming PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tools)
 
-# =========================================================================
 # ЛАБА 2: ФРОНТЕНД (frontend)
-# =========================================================================
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
 
 
-# Обратите внимание на пути: frontend/parser.y и frontend/lexer.l
+
 bison_target(MyParser frontend/parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.tab.cpp COMPILE_FLAGS "-d")
 flex_target(MyLexer frontend/lexer.l ${CMAKE_CURRENT_BINARY_DIR}/lex.yy.cpp)
 add_flex_bison_dependency(MyLexer MyParser)
@@ -53,9 +51,7 @@ target_include_directories(frontend PRIVATE
         ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-# =========================================================================
-# ТЕСТЫ
-# =========================================================================
+#ТЕСТЫ
 add_executable(test_graph tests/test_graph.cpp)
 target_link_libraries(test_graph PRIVATE Catch2::Catch2WithMain)
 target_include_directories(test_graph PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/tools)
