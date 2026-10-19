@@ -8,27 +8,16 @@
 
 namespace frontend {
 
-// Предварительное объявление для доступа к приватным полям AST
-class SemanticAnalyzer; 
+class SemanticAnalyzer; // <--- Предварительное объявление
 
-// --- Система типов ---
-
-// Базовые (скалярные) типы языка
+// --- Типы ---------------------------------------------------------------
 enum class ScalarKind { Int32, Character, Boolean };
-
-// Модификаторы для создания сложных типов (указатели и массивы)
 enum class TypeDecorator { Pointer, Array };
 
-/**
- * Структура, описывающая тип переменной или возвращаемого значения.
- * Позволяет хранить сложные цепочки, например: ptr$ ptr$ char[]
- * (указатель на указатель на массив символов).
- */
 struct TypeSpec {
-    ScalarKind kind;                         // Базовый тип
-    std::vector<TypeDecorator> decorators;   // Цепочка модификаторов
+    ScalarKind kind;
+    std::vector<TypeDecorator> decorators;
 
-    // Метод для красивого вывода типа в консоль (например, "ptr$ i32")
     std::string render() const {
         std::string out;
         for (auto d : decorators) {
@@ -46,9 +35,7 @@ struct TypeSpec {
     }
 };
 
-// --- Операторы ---
-
-// Перечисление всех поддерживаемых бинарных операторов
+// --- Операторы ----------------------------------------------------------
 enum class BinKind {
     Plus, Minus, Multiply, Divide,
     BitAnd, BitOr, BitXor,
@@ -57,7 +44,6 @@ enum class BinKind {
 
 enum class UnaryKind { Negate, Posit };
 
-// Вспомогательная функция для вывода текстового представления оператора
 inline const char* bin_kind_name(BinKind k) {
     switch (k) {
         case BinKind::Plus:      return "+";
@@ -77,41 +63,23 @@ inline const char* bin_kind_name(BinKind k) {
     return "?";
 }
 
-// --- Базовый узел AST ---
-
-/**
- * Базовый абстрактный класс для всех узлов AST.
- * 
- * Управление памятью: дочерние узлы хранятся в std::unique_ptr. 
- * Это гарантирует, что при удалении корневого узла (ProgramNode) 
- * все дерево рекурсивно удалится из памяти без утечек.
- */
+// --- Базовый узел -------------------------------------------------------
 class AstNode {
 protected:
-    // Помощник для вывода отступов при печати дерева
     static void write_indent(int depth) {
         while (depth-- > 0) std::cout << "  ";
     }
 public:
-    // Семантическому анализатору нужно читать внутренние поля (имена, типы, значения)
-    friend class SemanticAnalyzer; 
-
+    friend class SemanticAnalyzer; // <---
     virtual ~AstNode() = default;
-    
-    // Метод для текстового вывода (используется при отладке)
     virtual void describe(int depth = 0) const = 0;
-    
-    // Метод для генерации кода Graphviz (для визуализации дерева)
     virtual void emit_dot(std::ostream& out) const = 0;
-    
-    // Генерация уникального ID узла на основе его адреса в памяти
     std::size_t uid() const { return reinterpret_cast<std::size_t>(this); }
 };
 
-// --- Литералы и идентификаторы ---
-
+// --- Литералы -----------------------------------------------------------
 class IntConst : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     int value_;
 public:
     explicit IntConst(int v) : value_(v) {}
@@ -124,7 +92,7 @@ public:
 };
 
 class CharConst : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     char value_;
 public:
     explicit CharConst(char v) : value_(v) {}
@@ -137,7 +105,7 @@ public:
 };
 
 class BoolConst : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     bool value_;
 public:
     explicit BoolConst(bool v) : value_(v) {}
@@ -150,7 +118,7 @@ public:
 };
 
 class StrConst : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     std::string value_;
 public:
     explicit StrConst(const std::string& v) : value_(v) {}
@@ -163,7 +131,7 @@ public:
 };
 
 class Identifier : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     std::string name_;
 public:
     explicit Identifier(const std::string& n) : name_(n) {}
@@ -176,11 +144,9 @@ public:
     }
 };
 
-// --- Выражения ---
-
-// Операция взятия индекса (например, argv[0])
+// --- Выражения ----------------------------------------------------------
 class SubscriptExpr : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     std::unique_ptr<AstNode> base_, index_;
 public:
     SubscriptExpr(AstNode* base, AstNode* index) : base_(base), index_(index) {}
@@ -196,7 +162,7 @@ public:
 };
 
 class BinaryExpr : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     BinKind op_;
     std::unique_ptr<AstNode> lhs_, rhs_;
 public:
@@ -213,7 +179,7 @@ public:
 };
 
 class UnaryExpr : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     UnaryKind op_;
     std::unique_ptr<AstNode> operand_;
 public:
@@ -229,7 +195,7 @@ public:
 };
 
 class CallExpr : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     std::string callee_;
     std::vector<std::unique_ptr<AstNode>> args_;
 public:
@@ -250,11 +216,9 @@ public:
     }
 };
 
-// --- Инструкции ---
-
-// Блок кода { ... }. Создает новую область видимости для семантического анализа.
+// --- Инструкции ---------------------------------------------------------
 class BlockStmt : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     std::vector<std::unique_ptr<AstNode>> items_;
 public:
     void append(AstNode* stmt) { if (stmt) items_.emplace_back(stmt); }
@@ -271,10 +235,10 @@ public:
 };
 
 class VarDeclStmt : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     TypeSpec type_;
     std::string name_;
-    std::unique_ptr<AstNode> init_; // Опциональный инициализатор (может быть nullptr)
+    std::unique_ptr<AstNode> init_;
 public:
     VarDeclStmt(TypeSpec type, const std::string& name, AstNode* init = nullptr)
         : type_(std::move(type)), name_(name), init_(init) {}
@@ -289,9 +253,9 @@ public:
 };
 
 class AssignStmt : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     std::unique_ptr<AstNode> target_, value_;
-    bool add_; // true для "+=", false для "="
+    bool add_;
 public:
     AssignStmt(AstNode* target, AstNode* value, bool add) : target_(target), value_(value), add_(add) {}
     void describe(int depth = 0) const override {
@@ -306,7 +270,7 @@ public:
 };
 
 class ReturnStmt : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     std::unique_ptr<AstNode> value_;
 public:
     explicit ReturnStmt(AstNode* value = nullptr) : value_(value) {}
@@ -321,7 +285,7 @@ public:
 };
 
 class WhileStmt : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     std::unique_ptr<AstNode> cond_, body_;
 public:
     WhileStmt(AstNode* cond, AstNode* body) : cond_(cond), body_(body) {}
@@ -337,14 +301,8 @@ public:
     }
 };
 
-/**
- * Условный оператор if-elif-else.
- * Ветки хранятся в векторе branches_. 
- * Первая ветка (индекс 0) — это if. Последующие — это elif.
- * else хранится отдельно.
- */
 class IfStmt : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
 public:
     struct Branch { std::unique_ptr<AstNode> cond, body; };
 private:
@@ -376,12 +334,10 @@ public:
     }
 };
 
-// --- Функции и программа ---
-
 struct ParamSpec { TypeSpec type; std::string name; };
 
 class FunctionDecl : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     TypeSpec ret_type_;
     std::string name_;
     std::vector<ParamSpec> params_;
@@ -406,9 +362,8 @@ public:
     }
 };
 
-// Корень дерева — вся программа (список функций)
 class ProgramNode : public AstNode {
-    friend class SemanticAnalyzer; 
+    friend class SemanticAnalyzer; // <---
     std::vector<std::unique_ptr<AstNode>> funcs_;
 public:
     void add_function(AstNode* fn) { if (fn) funcs_.emplace_back(fn); }
