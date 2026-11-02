@@ -26,6 +26,10 @@ i32 main(i32 argc, char ptr$ ptr$ argv) {
         }
 
         i += 1;
+        {
+            ++i;
+            --i;
+        }
     }
 
     return sum;

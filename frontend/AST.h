@@ -42,7 +42,7 @@ enum class BinKind {
     Equal, NotEqual, Less, Greater, LessEq, GreaterEq
 };
 
-enum class UnaryKind { Negate, Posit };
+enum class UnaryKind { Negate, Posit, PreIncrement, PreDecrement };
 
 inline const char* bin_kind_name(BinKind k) {
     switch (k) {
@@ -185,13 +185,32 @@ class UnaryExpr : public AstNode {
 public:
     UnaryExpr(UnaryKind op, AstNode* operand) : op_(op), operand_(operand) {}
     void describe(int depth = 0) const override {
-        write_indent(depth); std::cout << "Unary(" << (op_ == UnaryKind::Negate ? "-" : "+") << ")\n";
+
+        write_indent(depth);
+
+        std::cout << "Unary(";
+        switch (op_) {
+            case UnaryKind::Negate: std::cout << "-"; break;
+            case UnaryKind::Posit: std::cout << "+"; break;
+            case UnaryKind::PreDecrement: std::cout << "--"; break;
+            case UnaryKind::PreIncrement: std::cout << "++"; break;
+        }
+        std::cout << ")\n";
         operand_->describe(depth + 1);
     }
     void emit_dot(std::ostream& out) const override {
-        out << "  node_" << uid() << " [label=\"" << (op_ == UnaryKind::Negate ? "-" : "+") << "\"];\n";
-        out << "  node_" << uid() << " -> node_" << operand_->uid() << ";\n"; operand_->emit_dot(out);
+        std::string op_str;
+        switch (op_) {
+            case UnaryKind::Negate: op_str = "-"; break;
+            case UnaryKind::Posit: op_str = "+"; break;
+            case UnaryKind::PreDecrement: op_str = "--"; break;
+            case UnaryKind::PreIncrement: op_str = "++"; break;
+        }
+        out << "  node_" << uid() << " [label=\"" << op_str << "\"];\n";
+        out << "  node_" << uid() << " -> node_" << operand_->uid() << ";\n";
+        operand_->emit_dot(out);
     }
+
 };
 
 class CallExpr : public AstNode {

@@ -30,6 +30,8 @@ CHR_LIT  \'[^\']\'
 "true"                  { return KW_TRUE; }
 "false"                 { return KW_FALSE; }
 
+"++"                    { return OP_INC; }
+"--"                    { return OP_DEC; }
 "+="                    { return OP_ADD_ASSIGN; }
 "=="                    { return OP_EQ; }
 "!="                    { return OP_NEQ; }

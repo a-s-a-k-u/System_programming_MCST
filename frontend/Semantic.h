@@ -86,7 +86,19 @@ class SemanticAnalyzer {
         }
 
         if (auto* n = dynamic_cast<UnaryExpr*>(expr)) {
-            return checkExpr(n->operand_.get());
+            TypeSpec operandType = checkExpr(n->operand_.get());
+            if (n->op_== UnaryKind::PreDecrement || n->op_ == UnaryKind::PreIncrement) {
+                if (operandType.kind != ScalarKind::Int32 || !operandType.decorators.empty()) {
+                    reportError("This argument not Int32 or it empty");
+                }
+                auto* as_id = dynamic_cast<Identifier*>(n->operand_.get());
+                auto* as_sub = dynamic_cast<SubscriptExpr*>(n->operand_.get());
+                if (!as_id && !as_sub) {
+                    reportError("++/-- requires an lvalue");
+                }
+                return operandType;
+            }
+            return operandType;
         }
 
         if (auto* n = dynamic_cast<CallExpr*>(expr)) {

@@ -27,6 +27,7 @@ using namespace frontend;
 
 %token KW_I32 KW_CHAR KW_BOOL KW_PTR
 %token KW_IF KW_ELIF KW_ELSE KW_WHILE KW_RETURN KW_TRUE KW_FALSE
+%token OP_INC OP_DEC
 %token OP_ADD_ASSIGN OP_EQ OP_NEQ OP_LEQ OP_GEQ
 %token OP_PLUS OP_MINUS OP_STAR OP_SLASH OP_ASSIGN OP_LT OP_GT OP_AMP OP_PIPE OP_CARET
 %token SYM_LBRACKET SYM_RBRACKET SYM_LPAREN SYM_RPAREN SYM_LBRACE SYM_RBRACE SYM_SEMI SYM_COMMA
@@ -92,6 +93,9 @@ block
         for (auto s : *$2) b->append(s);
         delete $2; $$ = b;
     }
+    | SYM_LBRACE SYM_RBRACE{
+        $$ = new BlockStmt();
+    }
     ;
 
 stmt_list
@@ -105,6 +109,7 @@ stmt
     | while_stmt { $$ = $1; }
     | if_stmt { $$ = $1; }
     | return_stmt { $$ = $1; }
+    | block { $$ = $1; }
     | expr SYM_SEMI { $$ = $1; }
     ;
 
@@ -164,6 +169,8 @@ expr
     | expr OP_EQ expr { $$ = new BinaryExpr(BinKind::Equal, $1, $3); }
     | expr OP_NEQ expr { $$ = new BinaryExpr(BinKind::NotEqual, $1, $3); }
     | IDENT SYM_LPAREN arg_list SYM_RPAREN { $$ = new CallExpr(*$1, *$3); delete $1; delete $3; }
+    | OP_INC expr { $$ = new UnaryExpr(UnaryKind::PreIncrement, $2); }
+    | OP_DEC expr { $$ = new UnaryExpr(UnaryKind::PreDecrement, $2); }
     | OP_MINUS expr %prec UMINUS { $$ = new UnaryExpr(UnaryKind::Negate, $2); }
     | OP_PLUS expr %prec UPLUS { $$ = new UnaryExpr(UnaryKind::Posit, $2); }
     ;
